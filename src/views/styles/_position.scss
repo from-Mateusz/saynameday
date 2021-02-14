@@ -1,0 +1,27 @@
+.snd-pos-obj-center-by-mrg {
+    margin-left: auto; margin-right: auto;
+}
+
+.snd-pos-obj-inline-center {
+    text-align: center;
+}
+
+.snd-pos-obj-center-abs {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.snd-pos--rel {
+    position: relative;
+}
+
+.snd-pos--removed {
+    display: none;
+}
+
+.snd-pos-spacing--1x-pd-horiz {
+    padding: 1em;
+    box-sizing: border-box;
+}

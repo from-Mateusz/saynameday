@@ -1,0 +1,12 @@
+:root {
+    --navHeight: 100px;
+    --mainContentHeight: calc(100% - var(--navHeight));
+}
+
+#snd-top-nav {
+    height: var(--navHeight);
+}
+
+#snd-main-content {
+    height: var(--mainContentHeight);
+}

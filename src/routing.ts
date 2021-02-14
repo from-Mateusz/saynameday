@@ -10,7 +10,9 @@ const repository = Repository.getInstance();
 const logger = new Logger("Routing");
 
 router.get('/', (req, res) => {
-    res.send("Welcome to SayNameDay app");
+    repository.findAllCountries(countries => {
+        res.render('home', {countries: countries});
+    })
 });
 
 router.get('/countries', (req, res) => {

@@ -1,0 +1,95 @@
+.snd-form {
+    width: 100%;
+    padding: 2em;
+    box-sizing: border-box;
+}
+
+.snd-form-element__input {
+    width: 100%;
+    height: 42px;
+    border: 1px solid #707070;
+    border-radius: 4px;
+    padding: .25rem 1rem;
+    box-sizing: border-box;
+    font-size: 1.15em;
+}
+
+.snd-select-field__input {
+    width: 100%;
+    height: 3em;
+    background-color: transparent;
+    border: 1px solid #707070;
+    border-radius: 4px;
+    padding: .5em .75em;
+    box-sizing: border-box;
+    color: rgba(255, 255, 255, .75);
+    font-size: 1.15em;
+    transition: color 2s, border .1s;
+  
+    &:hover {
+      cursor: pointer;
+      color: rgba(255, 255, 255, 1);
+    }
+  
+    &:focus {
+      outline: none;
+    }
+  
+    &.active {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+}
+
+.snd-select-field__options {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #fff;
+    border-radius: 4px;
+    border-top: 0;
+    position: absolute;
+    width: 100%;
+    z-index: 100;
+    background-color: #fff;
+    overflow: hidden;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    box-sizing: border-box;
+    border-left: 1px solid #707070;
+    border-right: 1px solid #707070;
+    border-bottom: 1px solid #707070;
+    max-height: 500px;
+    overflow-y: auto;
+
+    .option {
+      color: rgba(0, 0, 0, .75);
+      padding: .5rem .75rem;
+      font-family: "Titillium Web", sans-serif;
+      font-size: 1.25em;
+    }
+    .option:hover {
+      color: rgba(0, 0, 0, 1);
+      background-color: #fff;
+      cursor: pointer;
+    }
+}
+
+.snd-input-location-icon {
+    position: absolute;
+    top: calc(12.5px + (1em / 2) / 2);
+    right: 4em;
+    &:hover {
+        cursor: pointer
+    }
+}
+
+.snd-input-dropdown-off-icon {
+    position: absolute;
+    top: calc(15px + (1em / 2) / 2);
+    right: 1em;
+
+    &:hover {
+        cursor: pointer;
+    }
+}

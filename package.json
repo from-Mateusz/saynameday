@@ -4,8 +4,8 @@
   "description": "International Name Day check app",
   "main": "live.js",
   "scripts": {
-    "tsc": "tsc",
-    "power": "tsc && nodemon ./build/live.js"
+    "tsc": "tsc && tsc gulpfile.ts --outDir . --esModuleInterop true",
+    "power": "nodemon ./build/live.js"
   },
   "repository": {
     "type": "git",
@@ -31,8 +31,11 @@
     "@tsconfig/recommended": "^1.0.1",
     "@types/body-parser": "^1.19.0",
     "@types/express": "^4.17.11",
+    "@types/gulp": "^4.0.8",
     "@types/node": "^14.14.27",
     "@types/pug": "^2.0.4",
+    "gulp": "^4.0.2",
+    "gulp-clean-css": "^4.3.0",
     "nodemon": "^2.0.7"
   }
 }
