@@ -1,0 +1,38 @@
+{
+  "name": "saynameday",
+  "version": "1.0.0",
+  "description": "International Name Day check app",
+  "main": "live.js",
+  "scripts": {
+    "tsc": "tsc",
+    "power": "tsc && nodemon ./build/live.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wet-interface/saynameday.git"
+  },
+  "keywords": [
+    "saynameday",
+    "nameDay",
+    "webapp"
+  ],
+  "author": "wet-interface",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/wet-interface/saynameday/issues"
+  },
+  "homepage": "https://github.com/wet-interface/saynameday#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "pug": "^3.0.0"
+  },
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "@types/body-parser": "^1.19.0",
+    "@types/express": "^4.17.11",
+    "@types/node": "^14.14.27",
+    "@types/pug": "^2.0.4",
+    "nodemon": "^2.0.7"
+  }
+}

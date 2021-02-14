@@ -1,0 +1,27 @@
+{
+    "countries": [
+        {"name": "Austria", "code": "at"},
+        {"name": "Czechia", "code": "cz"},
+        {"name": "Finland", "code": "fi"},
+        {"name": "Greece", "code": "gr"},
+        {"name": "Latvia", "code": "lv"},
+        {"name": "Russia", "code": "ru"},
+        {"name": "Sweden", "code": "se"},
+        {"name": "Bulgaria", "code": "bg"},
+        {"name": "Denmark", "code": "dk"},
+        {"name": "France", "code": "fr"},
+        {"name": "Hungary", "code": "hu"},
+        {"name": "Lithuania", "code": "lt"},
+        {"name": "Slovakia", "code": "sk"},
+        {"name": "United States of America", "code": "us"},
+        {"name": "Croatia", "code": "cr"},
+        {"name": "Estonia", "code": "ee"},
+        {"name": "Gemrany", "code": "de"},
+        {"name": "Italy", "code": "it"},
+        {"name": "Poland", "code": "pl"},
+        {"name": "Spain", "code": "es"}
+    ],
+    "meanings": [
+        {"name": "Matthew", "meaning": "English form of Ματθαῖος (Matthaios), which was a Greek form of the Hebrew name מַתִּתְיָהוּ (Mattityahu) meaning gift of YAHWEH,  from the roots מַתָּן (mattan) meaning gift and יָה (yah) referring to the Hebrew God. Matthew, also called Levi, was one of the twelve apostles. He was a tax collector, and supposedly the author of the first gospel in the New Testament. He is considered a saint in many Christian traditions. The variant Matthias also occurs in the New Testament belonging to a separate apostle. The name appears in the Old Testament as Mattithiah."}
+    ]
+}
