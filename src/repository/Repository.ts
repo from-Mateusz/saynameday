@@ -6,7 +6,7 @@ import NameMeaning from "../domain/NameMeaning";
 import EmptyNameMeaning from "../domain/EmptyNameMeaning";
 import Logger from "../logger";
 
-const dbPath = path.join("X:\\Projects\\NodeJS\\saynameday\\db.json");
+const dbPath = path.join("<db location>");
 const charset = 'utf8';
 
 const logger = new Logger("Repository");
