@@ -1,5 +1,6 @@
 import { raw } from "body-parser";
 import https from "https";
+import EmptyNameMeaning from "../domain/EmptyNameMeaning";
 import NameDay from "../domain/NameDay";
 import NameDayDate from "../domain/NameDayDate";
 import Logger from "../logger"; 
@@ -58,16 +59,23 @@ export default class NameDayApi {
 
             res.on("end", () => {
                 const {data: {namedays, dates: {day, month}}} = JSON.parse(rawResponse);
-                logger.info('Namedays: ', namedays);
                 repository.findCountryByCode(code, country => {
                     const nameDays:NameDay[] = [];
-                    const namesFromApi = namedays[code];
-                    const names:string[] = !namesFromApi ? [] : namesFromApi.split(",")
-                    for(let name of names) {
-                        nameDays.push(new NameDay(country, new NameDayDate(day, month), name));
-                    }
-                    fn(nameDays);
-                })
+                    const namesFromApi:string = namedays[code];
+                    const names:string[] = !namesFromApi ? [] : namesFromApi.split(",").map(name => name.trim());
+                    repository.findNamesMeaning(names, meanings => {
+                        for(let name of names) {
+                            let nameMeaning = new EmptyNameMeaning();
+                            for(let meaning of meanings) {
+                                if(name === meaning.getName()) {
+                                    nameMeaning = meaning;
+                                }
+                            }
+                            nameDays.push(new NameDay(country, new NameDayDate(day, month), name, nameMeaning));
+                        }
+                        fn(nameDays);
+                    });
+                });
             });
 
             res.on('error', err => {

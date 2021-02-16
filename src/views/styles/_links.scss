@@ -1,0 +1,22 @@
+.link {
+    border-bottom: 1px solid #969696;
+}
+
+.link:link {
+    color: #707070
+}
+
+.link:visited {
+    color: #969696;
+}
+
+.link:focus,
+.link:hover {
+    cursor: pointer;
+    color: #D80032;
+    border-bottom: 1px solid #D80032;
+}
+
+.link:active {
+    color: #707070;
+}

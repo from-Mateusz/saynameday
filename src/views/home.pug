@@ -173,12 +173,12 @@ header
             polygon.cls-33(points='27.162 45.461 27.102 66.791 14.107 59.289 14.168 37.958 27.162 45.461')
             polygon.cls-19(points='41.27 53.606 41.209 74.936 27.102 66.791 27.162 45.461 41.27 53.606')
             polygon.cls-19(points='41.27 53.606 41.209 74.936 27.102 66.791 27.162 45.461 41.27 53.606')
-main#snd-main-content.layout-flex--columnar.justify-take-a-breath.align-items--cent
-  .snd-form-wrapper
+main#snd-main-content
+  .snd-form-wrapper.snd-pos-obj-center-by-mrg
     form.snd-form(action='')
       .snd-form-element.snd-typo-til-fam
         .snd-select-field.snd-pos--rel
-          input#country-select.snd-select-field__input(type='text', placeholder='Wybierz swoja role', data-defplaceholder='Wybierz kraj', name='country', readonly='true')
+          input#country-select.snd-select-field__input(type='text', placeholder='Choose country', data-defplaceholder='Wybierz kraj', name='country', readonly='true')
           svg#Layer_1.snd-input-location-icon(data-name='Layer 1', xmlns='http://www.w3.org/2000/svg', width='14.4', height='20', viewbox='0 0 370.854 511.9994')
             defs
               style.
@@ -191,36 +191,18 @@ main#snd-main-content.layout-flex--columnar.justify-take-a-breath.align-items--c
             g#Layer_1_copy(data-name='Layer 1 copy')
               path.cls-1(d='M151.7478,184.9792a3.5066,3.5066,0,0,1-2.5244-1.02L119.5251,154.261a3.4275,3.4275,0,0,1-.3354-.4141L1.5251,36.1736a3.5053,3.5053,0,0,1,0-4.95L31.2234,1.5251a3.5011,3.5011,0,0,1,4.95,0L151.7419,117.0935,267.31,1.5251a3.5011,3.5011,0,0,1,4.95,0l29.6982,29.6983a3.5051,3.5051,0,0,1,0,4.95L184.3459,153.7859a4.8255,4.8255,0,0,1-.3872.4746l-29.6982,29.6982a3.4744,3.4744,0,0,1-2.4727,1.02Z', transform='translate(-0.0001 0)')
               path.cls-2(d='M269.7854,1a2.98,2.98,0,0,1,2.1212.8787l29.6986,29.6985a3,3,0,0,1,0,4.2426L183.9923,153.4327l-.0541.0541-.0453.0618a3.2039,3.2039,0,0,1-.2877.358l-29.6986,29.6985a2.9969,2.9969,0,0,1-2.1533.8746h-.0557a2.9779,2.9779,0,0,1-2.1207-.8748l-29.6985-29.6985a3.1935,3.1935,0,0,1-.2878-.358l-.0452-.0618-.0541-.0541L1.8787,35.82a3,3,0,0,1,0-4.2426L31.5772,1.8787a3,3,0,0,1,4.2426,0l115.215,115.215.7071.7071.7072-.7071L267.664,1.8787A2.9807,2.9807,0,0,1,269.7854,1m0-1a3.9876,3.9876,0,0,0-2.8285,1.1716l-115.215,115.215L36.527,1.1716a4,4,0,0,0-5.6569,0h0L1.1716,30.87a4,4,0,0,0,0,5.6568L118.7845,154.14a3.9611,3.9611,0,0,0,.3871.474L148.87,184.3122a3.9824,3.9824,0,0,0,2.8278,1.1677h.0881a3.9824,3.9824,0,0,0,2.8278-1.1677l29.6985-29.6984a3.9709,3.9709,0,0,0,.3871-.474L302.3123,36.5269a4,4,0,0,0,0-5.6568L272.6138,1.1716A3.9876,3.9876,0,0,0,269.7854,0Z', transform='translate(-0.0001 0)')
-          ul#available-countries.snd-select-field__options.snd-pos--removed
+          ul#available-countries-list.snd-select-field__options.snd-pos--removed
             each country in countries
                 li.option.available-country(data-country-code=country.code)= country.name
-  .snd-wrapper
-    p.snd-announcement.snd-typo-til-fam.snd-typo--light.snd-typo--uppercase.snd-typo-size--1c25x.color--light-000
+  .snd-wrapper.snd-announcement-block.snd-pos--rel
+    p.snd-announcement.snd-typo-til-fam.snd-typo--light.snd-typo--uppercase.snd-typo-size--1c25x.color--light-000.snd-pos-obj-center-abs
       | today&apos;s nameday in 
       span#snd-announ-country-name.snd-typo--bold Poland
-  section.snd-nameday-cards.layout-flex.justify-center
-    .snd-nameday-card.color--light-000.snd-typo-til-fam.snd-effect-put-shadow--1
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        h1.card__title.snd-typo--bold.snd-pos-obj-inline-center.snd-typo-size--1c25x Mateusz
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card_description
-          | Mateusz jest niezwykle odpowiedzialny, prawdom&oacute;wny oraz dobroduszny. Ma ogromne poczucie sprawiedliwo&sacute;ci i ch&eogon;tnie niesie pomoc innym. Raz podj&eogon;te ustalenia i raz dane s&lstrok;owo realizuje z &zdot;elazn&aogon; konsekwencj&aogon;. Nawet, je&sacute;li mia&lstrok;oby mu to przynie&sacute;&cacute; straty. Ma bardzo siln&aogon; wol&eogon;, cz&eogon;sto jednak jest nadmiernie uparty i konserwatywny. Zdarza mu si&eogon; przy tym zbyt szybko reagowa&cacute; i m&oacute;wi&cacute; dok&lstrok;adnie to, co pomy&sacute;li, bez owijania w bawe&lstrok;n&eogon;. Bliskich nieustanie moralizuje i ingeruje w nieswoje sprawy. W sferze uczuciowej jest aktywny oraz zgodny ze swoimi zasadami moralnymi. Nie uznaje wolnych zwi&aogon;zk&oacute;w i wolnej mi&lstrok;o&sacute;ci. D&aogon;&zdot;y za to do zbudowania trwa&lstrok;ych relacji opartych na szczero&sacute;ci, oddaniu i zaufaniu.
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card__footer.snd-pos-obj-inline-center Mateusz, &zdot;yczymy Ci wszystkiego najlepszego!
-    .snd-nameday-card.color--light-000.snd-typo-til-fam.snd-effect-put-shadow--1
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        h1.card__title.snd-typo--bold.snd-pos-obj-inline-center.snd-typo-size--1c25x Mateusz
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card_description
-          | Mateusz jest niezwykle odpowiedzialny, prawdom&oacute;wny oraz dobroduszny. Ma ogromne poczucie sprawiedliwo&sacute;ci i ch&eogon;tnie niesie pomoc innym. Raz podj&eogon;te ustalenia i raz dane s&lstrok;owo realizuje z &zdot;elazn&aogon; konsekwencj&aogon;. Nawet, je&sacute;li mia&lstrok;oby mu to przynie&sacute;&cacute; straty. Ma bardzo siln&aogon; wol&eogon;, cz&eogon;sto jednak jest nadmiernie uparty i konserwatywny. Zdarza mu si&eogon; przy tym zbyt szybko reagowa&cacute; i m&oacute;wi&cacute; dok&lstrok;adnie to, co pomy&sacute;li, bez owijania w bawe&lstrok;n&eogon;. Bliskich nieustanie moralizuje i ingeruje w nieswoje sprawy. W sferze uczuciowej jest aktywny oraz zgodny ze swoimi zasadami moralnymi. Nie uznaje wolnych zwi&aogon;zk&oacute;w i wolnej mi&lstrok;o&sacute;ci. D&aogon;&zdot;y za to do zbudowania trwa&lstrok;ych relacji opartych na szczero&sacute;ci, oddaniu i zaufaniu.
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card__footer.snd-pos-obj-inline-center Mateusz, &zdot;yczymy Ci wszystkiego najlepszego!
-    .snd-nameday-card.color--light-000.snd-typo-til-fam.snd-effect-put-shadow--1
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        h1.card__title.snd-typo--bold.snd-pos-obj-inline-center.snd-typo-size--1c25x Mateusz
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card_description
-          | Mateusz jest niezwykle odpowiedzialny, prawdom&oacute;wny oraz dobroduszny. Ma ogromne poczucie sprawiedliwo&sacute;ci i ch&eogon;tnie niesie pomoc innym. Raz podj&eogon;te ustalenia i raz dane s&lstrok;owo realizuje z &zdot;elazn&aogon; konsekwencj&aogon;. Nawet, je&sacute;li mia&lstrok;oby mu to przynie&sacute;&cacute; straty. Ma bardzo siln&aogon; wol&eogon;, cz&eogon;sto jednak jest nadmiernie uparty i konserwatywny. Zdarza mu si&eogon; przy tym zbyt szybko reagowa&cacute; i m&oacute;wi&cacute; dok&lstrok;adnie to, co pomy&sacute;li, bez owijania w bawe&lstrok;n&eogon;. Bliskich nieustanie moralizuje i ingeruje w nieswoje sprawy. W sferze uczuciowej jest aktywny oraz zgodny ze swoimi zasadami moralnymi. Nie uznaje wolnych zwi&aogon;zk&oacute;w i wolnej mi&lstrok;o&sacute;ci. D&aogon;&zdot;y za to do zbudowania trwa&lstrok;ych relacji opartych na szczero&sacute;ci, oddaniu i zaufaniu.
-      .wrapper.snd-pos-spacing--1x-pd-horiz
-        p.card__footer.snd-pos-obj-inline-center Mateusz, &zdot;yczymy Ci wszystkiego najlepszego!
-script(src='/scripts/saynameday.js')
+  .snd-nameday-results-block.layout-flex--columnar.wrap.justify-take-a-breath
+    section.snd-nameday-cards.layout-flex.wrap.justify-center.items--center
+      
+    //- .snd-link-wrapper.snd-pos-obj-inline-center
+    //-   a.link(href='#next-1') Load next
+
+script(src='/scripts/saynameday.js', charset='utf-8')
+script(src='/jquery/jquery.js', charset='utf-8')

@@ -71,15 +71,18 @@ export default class Repository {
 
     findNameMeaningByName(name: string, fn: (name: NameMeaning) => void) {
         let result = new EmptyNameMeaning();
-        if(0 == this.meanings.length) {
+        let thatNameMeanings = this.meanings;
+        if(0 == this.meanings.length || undefined === this.meanings.find(meaning => name === meaning.getName())) {
             fs.readFile(dbPath, charset, (err, data) => {
                 if(err) {
                     return logger.error("something wen wrong", err);
                 }
                 const {meanings} = JSON.parse(data);
                 for(let meaning of meanings) {
+                    let nameMeaning = new NameMeaning(meaning.name, meaning.meaning);
+                    thatNameMeanings.push(nameMeaning)
                     if(name === meaning.name) {
-                        result = new NameMeaning(meaning.name, meaning.meaning);
+                        result = nameMeaning;
                     }
                 }
                 fn(result);
@@ -93,5 +96,51 @@ export default class Repository {
             }
             fn(result);
         }
+    }
+
+    /**
+     * Method includes check if there are cached meanings for names passed as @param names.
+     * If so, it should not read databse file. This is optimization and thanks to it,
+     * application is bit more responsive and faster.
+     * @param names 
+     * @param fn 
+     */
+    findNamesMeaning(names: string[], fn: (names: NameMeaning[]) => void) {
+        let result: NameMeaning[] = [];
+        let shouldReadDB = true;
+        if(this.meanings.length > 0) {
+            let existingNamesStr = JSON.stringify(this.meanings.map(meaning => meaning.getName()));
+            let shouldReadDB = names.every(name => existingNamesStr.includes(name));
+        }
+
+        if(shouldReadDB) {
+            fs.readFile(dbPath, charset, (err, data) => {
+                if(err) {
+                    return logger.error("something wen wrong", err);
+                }
+                const {meanings} = JSON.parse(data);
+                for(let meaning of meanings) {
+                    let nameMeaning = new NameMeaning(meaning.name, meaning.meaning);
+                    for(let name of names) {
+                        if(name === nameMeaning.getName()) {
+                            result.push(nameMeaning);
+                        }
+                    }
+                }
+                fn(result);
+            })
+        }
+
+        else {
+            for(let meaning of this.meanings) {
+                for(let name of names) {
+                    if(name === meaning.getName()) {
+                        result.push(meaning);
+                    }
+                }
+            }
+            fn(result);
+        }
+ 
     }
 }

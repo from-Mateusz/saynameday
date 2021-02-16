@@ -1,6 +1,11 @@
 :root {
     --navHeight: 100px;
+    --countrySelectionFormHeight: 3em;
+    --countrySelectionFormPadding: 2em;
     --mainContentHeight: calc(100% - var(--navHeight));
+    --announcementHeight: 3em;
+    --sndNameDayResultsHeight: calc(100% - (var(--countrySelectionFormHeight) + var(--countrySelectionFormPadding) * 2) - var(--announcementHeight));
+    --sndNameDayNextResultsBlock: calc(100% + var(--navHeight));
 }
 
 #snd-top-nav {
@@ -9,4 +14,18 @@
 
 #snd-main-content {
     height: var(--mainContentHeight);
+}
+
+.snd-announcement-block {
+    height: var(--announcementHeight);
+}
+
+.snd-nameday-results-block {
+    width: 100%;
+    min-height: var(--sndNameDayResultsHeight);
+}
+
+.snd-nameday-next-results-block {
+    width: 100%;
+    height: var(--sndNameDayNextResultsBlock);
 }

@@ -4,11 +4,31 @@
     &.justify-center {
         justify-content: center;
     }
+
+    &.wrap {
+        flex-wrap: wrap;
+    }
+
+    &.items--center {
+        align-items: center;
+    }
+
+    &.justify-take-a-breath {
+        justify-content: space-around;
+    }
+
+    &.justify--end {
+        justify-content: flex-end;
+    }
 }
 
 .layout-flex--columnar {
     display: flex;
-    flex-flow: nowrap column;
+    flex-direction: column;
+
+    &.wrap {
+        flex-wrap: wrap;
+    }
 
     &.justify-take-a-breath {
         justify-content: space-around;

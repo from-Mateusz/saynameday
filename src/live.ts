@@ -11,6 +11,7 @@ app.use(bodyParser.urlencoded({extended: false}))
 
 app.use("/styles", express.static(path.join(__dirname, "views/styles")))
 app.use("/scripts", express.static(path.join(__dirname, "views/scripts")));
+app.use("/jquery", express.static(path.join(__dirname, "../node_modules/jquery/dist")))
 
 console.log(path.join(__dirname, "/views/styles"));
 
