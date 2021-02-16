@@ -1,3 +1,4 @@
 #ignore build files
 build/
 node_modules
+gulpfile.js
