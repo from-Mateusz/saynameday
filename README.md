@@ -3,7 +3,7 @@ Simple application which allows user to  find out whose birthday is today in his
 
 Application benefits from Internationl Name Day Api, which you can check on: https://api.abalin.net/
 
-## How to use install and use it?
+## How to install and use it?
 Soon, there will be information about installation and usage.
 
 ## Contributing to SayNameDay
