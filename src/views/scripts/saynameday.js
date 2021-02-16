@@ -1,38 +1,6 @@
 const removedFromViewCssClass = "snd-pos--removed";
 const mainContent = document.getElementById("snd-main-content");
 
-Node.prototype.appendChildren = function(...children){
-    for(let child of children) {
-        if(child instanceof Node) {
-            this.appendChild(child);
-        }
-    }
-}
-
-/**
- *  More helfpul implementation of slice function for my case.
- *  I want to slice array with upper treshold of elements fetched from array.
- *  If array's length is 5 and from index is set to 3 and limit is set to 3,
- *  function will not try to extract 3 elements but only 2, because there's only
- *  2 elements left.
-*/
-function sliceBetter(src, from, limit) {
-    if(from > src.length) {
-      throw new Error("From index is out of source array's index bounds");
-    }
-  
-    const arr = [];
-    let pos = 0;
-    let posLimit = from + limit;
-      for(let elem of src) {
-      if(pos >= from && pos < posLimit) {
-        arr.push(elem);
-      }
-      pos++;
-    }
-    return arr;
-  }
-
 window.onload = () => {
     setupCountriesSelection();
     const api = new SayNameDayApi();
@@ -69,28 +37,6 @@ function showOrHideAvailableCountries(event) {
     event.preventDefault();
 }
 
-class Logger {
-    constructor(name) {
-        this.name = name;
-    }
-
-    static getInstance(name) {
-        return new Logger(name);
-    }
-
-    info(msg, ...msgs) {
-        console.log(this._createMsgPrefix(), msg, msgs);
-    }
-
-    error(msg, ...msgs) {
-        console.error(this._createMsgPrefix(), msg, msgs);
-    }
-
-    _createMsgPrefix() {
-        return `Logger ${this.name} speaks at [${new Date()}] about: `;
-    }
-}
-
 class SayNameDayApi {
 
     static logger = Logger.getInstance("SayNameDayApi");
@@ -101,6 +47,9 @@ class SayNameDayApi {
 
     getNameDaysByCountryCode(code) {
         let thatCardCreator = this.cardCreator;
+
+        loading();
+
         $.ajax({
             url: `http://localhost:3000/namedays/${code}`,
             method: 'GET'
@@ -115,11 +64,26 @@ class SayNameDayApi {
             nameDaysCollectionWrapper.appendChildren(...(cardResultBlock.getCards()));
             const resultsNavigation = createCardResultNavigation(cardResultBlock);
             nameDaysResultBlock.appendChild(resultsNavigation);
+            loading(false);
         })
 
         .fail(() => {
             SayNameDayApi.logger.error(`Could not fetch countries by code: ${code}`);
         })
+    }
+}
+
+function loading(pending = true) {
+    const loaderContainer = document.querySelector(".snd-loading-container");
+    if(pending) {
+        if(loaderContainer.classList.contains(removedFromViewCssClass)) {
+            loaderContainer.classList.remove(removedFromViewCssClass);
+        }
+    }
+    else {
+        if(!loaderContainer.classList.contains(removedFromViewCssClass)) {
+            loaderContainer.classList.add(removedFromViewCssClass);
+        }
     }
 }
 

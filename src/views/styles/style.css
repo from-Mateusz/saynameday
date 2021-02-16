@@ -9,7 +9,7 @@
 
 html, body {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   letter-spacing: 1.5px;
   font: 16px Roboto, sans-serif;
   color: var(--primarycolor);
@@ -297,6 +297,16 @@ a {
   --announcementHeight: 3em;
   --sndNameDayResultsHeight: calc(100% - (var(--countrySelectionFormHeight) + var(--countrySelectionFormPadding) * 2) - var(--announcementHeight));
   --sndNameDayNextResultsBlock: calc(100% + var(--navHeight));
+}
+
+.snd-loading-container {
+  width: 100%;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  background-color: #fff;
 }
 
 #snd-top-nav {
