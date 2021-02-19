@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig.json",
+
+    "compilerOptions": {
+        "outDir": "./src/test",
+        "noEmit": false
+    },
+
+    "exclude": ["./src/dev/public"]
+}

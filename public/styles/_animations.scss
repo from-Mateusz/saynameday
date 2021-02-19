@@ -1,0 +1,18 @@
+@keyframes moveleftright {
+    from {
+        transform: translateX(50px);
+    }
+    to {
+        transform: translateX(-50px);
+    }
+}
+
+
+@keyframes slideLeftOut {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(-100vh);
+    }
+}

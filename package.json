@@ -4,8 +4,11 @@
   "description": "International Name Day check app",
   "main": "live.js",
   "scripts": {
-    "tsc": "tsc && tsc gulpfile.ts --outDir . --esModuleInterop true",
-    "power": "nodemon ./build/live.js"
+    "build:dev": "tsc -p ./tsconfig.dev.json",
+    "build:test": "tsc -p ./tsconfig.test.json && tsc -p ./tsconfig.dev.assets.json && gulp && browserify ./public/scripts/app.js -o ./public/scripts/saynameday.js",
+    "start:test": "nodemon ./src/test/app/live.js",
+    "build:prod": "tsc ./gulpfile.ts --outDir . --esModuleInterop true && gulp",
+    "start:prod": "nodemon ./src/prod/live.js"
   },
   "repository": {
     "type": "git",
@@ -23,22 +26,31 @@
   },
   "homepage": "https://github.com/wet-interface/saynameday#readme",
   "dependencies": {
+    "@types/gulp-minify-css": "0.0.32",
     "body-parser": "^1.19.0",
+    "commonjs": "0.0.1",
     "express": "^4.17.1",
     "gulp-concat": "^2.6.1",
+    "gulp-sourcemaps": "^3.0.0",
     "jquery": "^3.5.1",
-    "pug": "^3.0.0"
+    "properties-reader": "^2.2.0",
+    "pug": "^3.0.0",
+    "vinyl-source-stream": "^2.0.0"
   },
   "devDependencies": {
     "@tsconfig/recommended": "^1.0.1",
     "@types/body-parser": "^1.19.0",
+    "@types/browserify": "^12.0.36",
     "@types/express": "^4.17.11",
     "@types/gulp": "^4.0.8",
     "@types/gulp-concat": "0.0.32",
     "@types/gulp-filter": "^3.0.33",
+    "@types/gulp-sourcemaps": "0.0.34",
     "@types/jquery": "^3.5.5",
-    "@types/node": "^14.14.27",
+    "@types/node": "^14.14.28",
+    "@types/properties-reader": "^2.1.0",
     "@types/pug": "^2.0.4",
+    "@types/vinyl-source-stream": "0.0.30",
     "gulp": "^4.0.2",
     "gulp-clean-css": "^4.3.0",
     "gulp-filter": "^6.0.0",
