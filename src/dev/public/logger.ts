@@ -6,7 +6,7 @@ export default class Logger {
         return new Logger(name);
     }
 
-    info(msg: string, ...msgs: string[]) {
+    info(msg: string, ...msgs: any[]) {
         console.log(this.createMessagePrefix(), msg, msgs);
     }
 

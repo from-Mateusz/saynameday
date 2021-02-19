@@ -20,3 +20,23 @@ export class ArrayHelper {
     }
 }
 
+export class HTMLElementHelper {
+  static appendChildren = function(target: Node, ...children: Node[]): void {
+    for(let child of children) {
+        target.appendChild(child);
+    }
+  }
+
+  static leaveParent = function(source: Node) {
+    if(source.parentNode) {
+        source.parentNode.removeChild(source);
+        return source;
+    }
+    return null;
+  };
+
+  static clear = function(source: HTMLElement) {
+    source.innerHTML = "";
+  }
+}
+

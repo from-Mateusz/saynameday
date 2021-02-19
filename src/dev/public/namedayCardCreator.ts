@@ -8,7 +8,7 @@ export class NameDayCardCreator {
 
     createCards(namedays: NameDay[]): CardsCollection {
         const collectionLimit = 3;
-        const collection = new CardsCollection( Helpers.ArrayHelper.slice(namedays, collectionLimit) );
+        const collection = new CardsCollection( Helpers.ArrayHelper.slice(namedays, collectionLimit).map(nameday => this.createCard(nameday)) );
         if(namedays.length > 3) {
             let nextCollection:CardsCollection = new CardsCollection();
             for(let i = 3; i < namedays.length; i++) {
@@ -42,7 +42,7 @@ export class NameDayCardCreator {
 
         const cardDescription = document.createElement("p");
         cardDescription.classList.add("card_description");
-        cardDescription.innerHTML = nameday.meaning ? nameday.meaning : cardDescription.innerHTML;
+        cardDescription.innerHTML = nameday.meaning ? nameday.meaning.meaning : cardDescription.innerHTML;
 
         cardDescriptionWrapper.appendChild(cardDescription);
 
@@ -54,7 +54,8 @@ export class NameDayCardCreator {
 
         cardFooterWrapper.appendChild(cardFooter);
 
-        card.appendChildren(cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
+        Helpers.HTMLElementHelper.appendChildren(card, cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
+        // card.appendChildren(cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
         
         return card;
     }
