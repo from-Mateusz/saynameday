@@ -122,6 +122,10 @@ a {
           box-sizing: border-box;
 }
 
+.snd-pad-from-right-4x {
+  padding: 4em;
+}
+
 .snd-logo-wrapper {
   width: 93px;
   height: 76px;

@@ -10878,33 +10878,635 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.Client = void 0;
 const jquery_1 = __importDefault(require("jquery"));
-class Api {
-    getNamedaysByCountryCode(code) {
+const logger_1 = __importDefault(require("./logger"));
+class Client {
+    getNamedaysByCountryCode(code, cb, loaderOptions) {
+        if (loaderOptions && loaderOptions.on()) { }
         jquery_1.default.ajax({
             url: `namedays/${code}`,
             method: "get"
         })
             .done((namedays) => {
-            console.log('Namedays: ', namedays);
+            cb(namedays);
+            if (loaderOptions && loaderOptions.off()) { }
         })
             .fail(() => {
             console.log('Something went wrong ');
         });
     }
 }
-exports.default = Api;
+exports.Client = Client;
+Client.LOGGER = logger_1.default.getInstance("ClientApi");
 
-},{"jquery":1}],3:[function(require,module,exports){
+},{"./logger":6,"jquery":1}],3:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-const api_1 = __importDefault(require("./api"));
-const api = new api_1.default();
+const countryPicker_1 = __importDefault(require("./countryPicker"));
+const countryPicker = new countryPicker_1.default();
 window.onload = () => {
-    api.getNamedaysByCountryCode("pl");
+    countryPicker.enableCountryPicks();
 };
 
-},{"./api":2}]},{},[3]);
+},{"./countryPicker":4}],4:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const Api = __importStar(require("./api"));
+const logger_1 = __importDefault(require("./logger"));
+const NameDayCard = __importStar(require("./namedayCardCreator"));
+const CardsResultManager = __importStar(require("./nameDayCardResultsManager"));
+HTMLElement.prototype.isDisplayed = function () {
+    if (!this.classList.contains("snd-pos--removed")) {
+        return true;
+    }
+    return false;
+};
+HTMLElement.prototype.setDisplayed = function (on) {
+    if (on) {
+        if (!this.isDisplayed()) {
+            this.classList.remove("snd-pos--removed");
+        }
+    }
+    else {
+        if (this.isDisplayed()) {
+            this.classList.add("snd-pos--removed");
+        }
+    }
+};
+const apiClient = new Api.Client();
+const logger = logger_1.default.getInstance("CountryPicker");
+const loaderOptions = {
+    on: () => {
+        const loader = document.querySelector(".snd-loading-container");
+        if (loader && !loader.isDisplayed()) {
+            loader.setDisplayed(true);
+        }
+    },
+    off: () => {
+        const loader = document.querySelector(".snd-loading-container");
+        if (loader && loader.isDisplayed()) {
+            loader.classList.add("snd-pos--removed");
+        }
+    }
+};
+class CountryPicker {
+    enableCountryPicks() {
+        const countryPickEntry = document.getElementById("country-select");
+        const countriesList = document.getElementById("available-countries-list");
+        if (!countryPickEntry) {
+            throw new Error("Could not locate countries entry");
+        }
+        if (!countriesList) {
+            throw new Error("Could not localte available countries' list");
+        }
+        countryPickEntry.addEventListener('click', event => {
+            if (!countriesList.isDisplayed()) {
+                countriesList.setDisplayed(true);
+            }
+            else {
+                countriesList.setDisplayed(false);
+            }
+            event.preventDefault();
+        });
+        this.listenOnCountryPicks();
+    }
+    listenOnCountryPicks() {
+        const countriesList = document.getElementById("available-countries-list");
+        const countryPickEvent = new CustomEvent('countryPick', { detail: "" });
+        if (!countriesList) {
+            throw new Error("Could not locate countries' list");
+        }
+        const countriesOnList = Array.from(countriesList.querySelectorAll(".option.available-country"));
+        if (!countriesOnList) {
+            throw new Error("No available countries on list");
+        }
+        CountryPicker.LOGGER.info('Available countries on list: ', countriesOnList);
+        const that = this;
+        for (let country of countriesOnList) {
+            country.addEventListener("click", event => {
+                const code = country.dataset.countryCode;
+                if (code) {
+                    CountryPicker.LOGGER.info("Picking name-days by country code");
+                    countriesList.setDisplayed(false);
+                    this.pickNameDaysByCode(code);
+                }
+                event.preventDefault();
+            });
+        }
+    }
+    pickNameDaysByCode(code) {
+        apiClient.getNamedaysByCountryCode(code, namedays => {
+            const presentationNameDays = Array.from(namedays);
+            const namedayCardCreator = new NameDayCard.NameDayCardCreator();
+            const nameDayCards = namedayCardCreator.createCards(presentationNameDays);
+            CountryPicker.LOGGER.info("Entering new cards: ", namedays);
+            CardsResultManager.clearNameDayCardsResults();
+            CardsResultManager.makeSpaceAndEnterNextCards(nameDayCards.getCards());
+            CardsResultManager.establishNavigtion(nameDayCards);
+        }, loaderOptions);
+    }
+}
+exports.default = CountryPicker;
+CountryPicker.LOGGER = logger_1.default.getInstance("CountryPicker");
+
+},{"./api":2,"./logger":6,"./nameDayCardResultsManager":7,"./namedayCardCreator":8}],5:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.HTMLElementHelper = exports.ArrayHelper = void 0;
+class ArrayHelper {
+    static slice(source, limit, from) {
+        if (from && from > source.length) {
+            throw new Error("From index is out of source bounds");
+        }
+        const result = [];
+        let pos = 0;
+        let startFrom = from ? from : 0;
+        let posLimit = startFrom + limit;
+        for (let elem of source) {
+            if (pos >= startFrom && pos < posLimit) {
+                result.push(elem);
+            }
+            pos++;
+        }
+        return result;
+    }
+}
+exports.ArrayHelper = ArrayHelper;
+class HTMLElementHelper {
+}
+exports.HTMLElementHelper = HTMLElementHelper;
+HTMLElementHelper.appendChildren = function (target, ...children) {
+    for (let child of children) {
+        target.appendChild(child);
+    }
+};
+HTMLElementHelper.leaveParent = function (source) {
+    if (source.parentNode) {
+        source.parentNode.removeChild(source);
+        return source;
+    }
+    return null;
+};
+HTMLElementHelper.clear = function (source) {
+    source.innerHTML = "";
+};
+
+},{}],6:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class Logger {
+    constructor(name) {
+        this.name = name;
+    }
+    static getInstance(name) {
+        return new Logger(name);
+    }
+    info(msg, ...msgs) {
+        console.log(this.createMessagePrefix(), msg, msgs);
+    }
+    error(msg, ...erroneusValues) {
+        console.error(this.createMessagePrefix(), msg, erroneusValues);
+    }
+    createMessagePrefix() {
+        return `Logger ${this.name} speaks at [${new Date()}] about: `;
+    }
+}
+exports.default = Logger;
+
+},{}],7:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.makeSpaceAndEnterNextCards = exports.buildNavigation = exports.establishNavigtion = exports.clearNameDayCardsResults = void 0;
+const logger_1 = __importDefault(require("./logger"));
+HTMLElement.prototype.appendChildren = function (...children) {
+    for (let child of children) {
+        this.appendChild(child);
+    }
+};
+HTMLElement.prototype.leaveParent = function () {
+    if (this.parentNode) {
+        this.parentNode.removeChild(this);
+        return this;
+    }
+    return null;
+};
+HTMLElement.prototype.clear = function () {
+    this.innerHTML = "";
+};
+const logger = logger_1.default.getInstance("NameDayCardCreator");
+function clearNameDayCardsResults() {
+    let presentationNameDaysCardsResultsHolder = document.querySelector(".snd-nameday-cards");
+    presentationNameDaysCardsResultsHolder.clear();
+}
+exports.clearNameDayCardsResults = clearNameDayCardsResults;
+function establishNavigtion(card) {
+    destroyNavigation();
+    logger.info("Next cards' collection: ", card.getNext());
+    buildNavigation(card.getNext(), card.getPrevious());
+}
+exports.establishNavigtion = establishNavigtion;
+function buildNavigation(next, previous) {
+    const cardResultsPresentationBlock = document.querySelector(".snd-nameday-results-block");
+    const navigation = document.createElement("div");
+    navigation.classList.add("snd-links-wrapper");
+    if (!cardResultsPresentationBlock) {
+        throw new Error("Could not locate name-day cards' result block");
+    }
+    if (previous) {
+        let navigationLink = document.createElement("div");
+        navigationLink.classList.add("snd-link-wrapper");
+        let link = document.createElement("a");
+        link.classList.add('.link');
+        link.innerHTML = "previous";
+        link.onclick = event => {
+            makeSpaceAndEnterPreviousCards(previous.getCards());
+            establishNavigtion(previous);
+            event.preventDefault();
+        };
+        /* If there is a previous link, there also should be next link, therefore we have to make space for these links */
+        navigation.classList.add(...("layout-flex justify-take-a-breath".split(" ")));
+        navigationLink.appendChildren(link);
+        navigation.appendChild(navigationLink);
+    }
+    if (next) {
+        let navigationLink = document.createElement("div");
+        navigationLink.classList.add("snd-link-wrapper");
+        let link = document.createElement("a");
+        link.classList.add('.link');
+        link.innerHTML = "next";
+        link.onclick = event => {
+            logger.info("Next cards navigation: ", next.getCards());
+            makeSpaceAndEnterNextCards(next.getCards());
+            establishNavigtion(next);
+            event.preventDefault();
+        };
+        if (!previous) {
+            /* If there was no previous link, space for two links will be unnecessary */
+            navigation.classList.add(...("layout-flex justify--end snd-pad-from-right-4x".split(" ")));
+        }
+        navigationLink.appendChildren(link);
+        navigation.appendChild(navigationLink);
+    }
+    cardResultsPresentationBlock.appendChild(navigation);
+}
+exports.buildNavigation = buildNavigation;
+function destroyNavigation() {
+    const navigation = document.querySelector(".snd-links-wrapper");
+    if (navigation) {
+        // Helpers.HTMLElementHelper.leaveParent(navigation);
+        navigation.leaveParent();
+    }
+}
+function makeSpaceAndEnterPreviousCards(cards) {
+    let presentationNameDaysCardsResultsHolder = document.querySelector(".snd-nameday-cards");
+    let cardsTakenBackCoords = takeCardsBackBy(cards.length);
+    if (cardsTakenBackCoords.length > 0) {
+        setTimeout(() => {
+            EnterPreviousCards(cardsTakenBackCoords, cards);
+        }, 700);
+    }
+    else {
+        EnterPreviousCards(cardsTakenBackCoords, cards);
+    }
+}
+function EnterPreviousCards(cardsTakenBackCoords, cards) {
+    let presentationNameDaysCardsResultsHolder = document.querySelector(".snd-nameday-cards");
+    let firstCardTakenBack = cardsTakenBackCoords[cardsTakenBackCoords.length - 1];
+    let remainingCards = Array.from(getVisibleCards());
+    if (remainingCards.length === 0) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for (let i = 0; i < cards.length; i++) {
+            showInAndMoveAwayFromTo(cards[i], 'translateX(100%)', `translateX(0)`);
+        }
+    }
+    if (remainingCards.length === 1) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for (let i = 0; i < cards.length; i++) {
+            if (i < cards.length - 1) {
+                showInAndMoveAwayFromTo(cards[i], 'translateX(0)', `translateX(${cardsTakenBackCoords[cardsTakenBackCoords.length - 1]}px)`);
+            }
+            else {
+                showIn(cards[i]);
+            }
+        }
+    }
+    if (remainingCards.length === 2) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for (let i = 0; i < cards.length; i++) {
+            if (i < cards.length - 1) {
+                showInAndMoveAwayFromTo(cards[i], 'translateX(0)', `translateX(${cardsTakenBackCoords[cardsTakenBackCoords.length - 1]}px)`);
+            }
+            else {
+                showIn(cards[i]);
+            }
+        }
+    }
+}
+function makeSpaceAndEnterNextCards(cards) {
+    if (getVisibleCards().length === 0) {
+        EnterNextCards([], cards);
+    }
+    else {
+        let forwardedCardsCoords = fastForwardCardsBy(cards.length);
+        if (forwardedCardsCoords.length > 0) {
+            setTimeout(() => {
+                EnterNextCards(forwardedCardsCoords, cards);
+            }, 700);
+        }
+        else {
+            EnterNextCards(forwardedCardsCoords, cards);
+        }
+    }
+}
+exports.makeSpaceAndEnterNextCards = makeSpaceAndEnterNextCards;
+function EnterNextCards(forwardedCardsCoords, cards) {
+    let presentationNameDaysCardsResultsHolder = document.querySelector(".snd-nameday-cards");
+    let lastForwardedCardsCoords = forwardedCardsCoords[forwardedCardsCoords.length - 1];
+    let remainingCards = getVisibleCards();
+    if (remainingCards.length === 2) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        showIn(cards[cards.length - 1]);
+    }
+    if (remainingCards.length === 1) {
+        // Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for (let i = 0; i < cards.length; i++) {
+            if (i < cards.length - 1) {
+                showInAndMoveAwayFromTo(cards[i], `translateX(${forwardedCardsCoords[forwardedCardsCoords.length - 1]}px)`, 'translateX(0)');
+            }
+            else {
+                showIn(cards[i]);
+            }
+        }
+    }
+    if (remainingCards.length === 0) {
+        logger.info("Adding new cards");
+        // Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for (let i = 0; i < cards.length; i++) {
+            showInAndMoveAwayFromTo(cards[i], `translateX(100%)`, 'translateX(0)');
+        }
+    }
+}
+function fastForwardCardsBy(offset) {
+    if (offset === 0) {
+        return [];
+    }
+    let cards = getVisibleCards();
+    let coordinates = [];
+    for (let card of cards) {
+        coordinates.push(collectCoordinates(card));
+    }
+    if (offset === 1) {
+        hideAndLeave(cards.slice(0, cards.length - 2));
+        moveAwayFromTo(cards[cards.length - 2], 'translateX(0)', `translateX(calc(${(coordinates[coordinates.length - 2].x
+            - coordinates[0].x) * (-1)}px + 4em))`);
+        moveAwayFromTo(cards[cards.length - 1], 'translateX(0)', `translateX(calc(${(coordinates[coordinates.length - 1].x
+            - coordinates[0].x) * (-1)}px + 4em))`);
+    }
+    if (offset === 2) {
+        hideAndLeave(cards.slice(0, cards.length - 1));
+        moveAwayFromTo(cards[cards.length - 1], 'translateX(0)', `translateX(calc(${(coordinates[coordinates.length - 1].x
+            - coordinates[0].x) * (-1)}px + 4em))`);
+    }
+    if (offset === 3) {
+        hideAndLeave(cards);
+    }
+    return coordinates;
+}
+function takeCardsBackBy(offset) {
+    if (offset === 0) {
+        return [];
+    }
+    let cards = getVisibleCards();
+    let coordinates = [];
+    for (let card of cards) {
+        coordinates.push(collectCoordinates(card));
+    }
+    if (offset === 1) {
+        hideAndLeave(cards.slice(0, cards.length - 2));
+        moveAwayFromTo(cards[cards.length - 2], 'translateX(0)', `translateX(calc(${(coordinates[coordinates.length - 2].x
+            - coordinates[0].x) * (-1)}px + 4em))`);
+        moveAwayFromTo(cards[cards.length - 1], 'translateX(0)', `translateX(calc(${(coordinates[coordinates.length - 1].x
+            - coordinates[0].x) * (-1)}px + 4em))`);
+    }
+    if (offset === 3) {
+        hideAndLeave(cards);
+    }
+    return coordinates;
+}
+function showInAndMoveAwayFromTo(card, from, to) {
+    card.animate({
+        opacity: [0, 1],
+        transform: [from, to]
+    }, {
+        delay: 0,
+        duration: 500
+    });
+}
+function showIn(card) {
+    const HIDDEN = '1';
+    card.style.opacity = HIDDEN;
+    card.animate({
+        opacity: [0, 1]
+    }, {
+        delay: 500,
+        duration: 500,
+        fill: "forwards"
+    });
+}
+function moveAwayFromTo(card, from, to) {
+    card.animate([
+        { transform: from },
+        { transform: to }
+    ], {
+        delay: 100,
+        duration: 500
+    });
+}
+function hideAndLeave(cards) {
+    for (let card of cards) {
+        card.animate({ opacity: [1, 0] }, {
+            duration: 500,
+            fill: "forwards"
+        });
+        setTimeout(() => {
+            card.leaveParent();
+        }, 600);
+    }
+}
+function getVisibleCards() {
+    return Array.from(document.querySelectorAll(".snd-nameday-card"));
+}
+function collectCoordinates(card) {
+    let bound = card.getBoundingClientRect();
+    return { x: bound.x, y: bound.y };
+}
+
+},{"./logger":6}],8:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.CardsCollection = exports.NameDayCardCreator = void 0;
+const logger_1 = __importDefault(require("./logger"));
+const Helpers = __importStar(require("./helpers"));
+class NameDayCardCreator {
+    createCards(namedays) {
+        const collectionLimit = 3;
+        const collection = new CardsCollection(Helpers.ArrayHelper.slice(namedays, collectionLimit).map(nameday => this.createCard(nameday)));
+        if (namedays.length > 3) {
+            let lastNameDayIndx = namedays.length - 1;
+            let nextCollection = new CardsCollection();
+            for (let i = 3; i < namedays.length; i++) {
+                if (nextCollection.getCards().length < collectionLimit) {
+                    NameDayCardCreator.LOGGER.info("Adding Nameday: ", namedays[i]);
+                    nextCollection.addCard(this.createCard(namedays[i]));
+                }
+                else {
+                    NameDayCardCreator.LOGGER.info("Add next collection: ", nextCollection);
+                    collection.addNext(nextCollection.copy());
+                    nextCollection = new CardsCollection();
+                }
+                if (nextCollection.getSize() < collectionLimit && i === lastNameDayIndx) {
+                    NameDayCardCreator.LOGGER.info("Add next collection: ", nextCollection);
+                    collection.addNext(nextCollection.copy());
+                    nextCollection = new CardsCollection();
+                }
+            }
+        }
+        NameDayCardCreator.LOGGER.info("Created Name-Day cards' collection: ", collection);
+        return collection;
+    }
+    createCard(nameday) {
+        const card = document.createElement("div");
+        card.classList.add(...("snd-nameday-card color--light-000 snd-typo-til-fam snd-effect-put-shadow--1".split(" ")));
+        const cardTitleWrapper = document.createElement("div");
+        cardTitleWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
+        const cardTitle = document.createElement("h1");
+        cardTitle.classList.add(...("card__title snd-typo--bold snd-pos-obj-inline-center snd-typo-size--1c25x".split(" ")));
+        cardTitle.innerHTML = nameday.name ? nameday.name : cardTitle.innerHTML;
+        cardTitleWrapper.appendChild(cardTitle);
+        const cardDescriptionWrapper = document.createElement("div");
+        cardDescriptionWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
+        const cardDescription = document.createElement("p");
+        cardDescription.classList.add("card_description");
+        cardDescription.innerHTML = "undefined" !== nameday.meaning.meaning ? nameday.meaning.meaning : "No meaning found for that name";
+        cardDescriptionWrapper.appendChild(cardDescription);
+        const cardFooterWrapper = document.createElement("div");
+        cardFooterWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
+        const cardFooter = document.createElement("p");
+        cardFooterWrapper.classList.add(...("card__footer snd-pos-obj-inline-center".split(" ")));
+        cardFooterWrapper.appendChild(cardFooter);
+        // Helpers.HTMLElementHelper.appendChildren(card, cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
+        card.appendChildren(cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
+        return card;
+    }
+}
+exports.NameDayCardCreator = NameDayCardCreator;
+NameDayCardCreator.LOGGER = logger_1.default.getInstance("NameDayCardCreator");
+class CardsCollection {
+    constructor(cards = [], next, previous) {
+        this.cards = cards;
+        this.next = next;
+        this.previous = previous;
+    }
+    addCard(card) {
+        this.cards.push(card);
+    }
+    getCards() {
+        return this.cards;
+    }
+    getNext() {
+        return this.next;
+    }
+    addNext(collection) {
+        var _a;
+        if (!this.hasNext()) {
+            this.next = collection;
+            this.next.addPrevious(this);
+        }
+        else {
+            let nextCollection = this.getNext();
+            while (nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.hasNext()) {
+                CardsCollection.LOGGER.info("Looking for next card", nextCollection);
+                nextCollection = nextCollection.getNext();
+            }
+            CardsCollection.LOGGER.info("Adding next cards' collection", nextCollection);
+            nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.addNext(collection);
+            (_a = nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.getNext()) === null || _a === void 0 ? void 0 : _a.addPrevious(nextCollection);
+        }
+    }
+    getPrevious() {
+        return this.previous;
+    }
+    addPrevious(collection) {
+        this.previous = collection;
+    }
+    hasNext() {
+        return undefined !== this.next;
+    }
+    hasPrevious() {
+        return undefined !== this.previous;
+    }
+    copy() {
+        var _a, _b;
+        return new CardsCollection([...this.cards], (_a = this.next) === null || _a === void 0 ? void 0 : _a.copy(), (_b = this.previous) === null || _b === void 0 ? void 0 : _b.copy());
+    }
+    getSize() {
+        return this.cards.length;
+    }
+}
+exports.CardsCollection = CardsCollection;
+CardsCollection.LOGGER = logger_1.default.getInstance("CardsCollection");
+
+},{"./helpers":5,"./logger":6}]},{},[3]);

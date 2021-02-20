@@ -2,7 +2,7 @@
   "name": "saynameday",
   "version": "1.0.0",
   "description": "International Name Day check app",
-  "main": "live.js",
+  "main": "./src/prod/app/live.js",
   "scripts": {
     "build:dev": "tsc -p ./tsconfig.dev.json",
     "build:test": "tsc -p ./tsconfig.test.json && tsc -p ./tsconfig.dev.assets.json && gulp && browserify ./public/scripts/app.js -o ./public/scripts/saynameday.js",

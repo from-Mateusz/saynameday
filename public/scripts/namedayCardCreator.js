@@ -28,19 +28,28 @@ const Helpers = __importStar(require("./helpers"));
 class NameDayCardCreator {
     createCards(namedays) {
         const collectionLimit = 3;
-        const collection = new CardsCollection(Helpers.ArrayHelper.slice(namedays, collectionLimit));
+        const collection = new CardsCollection(Helpers.ArrayHelper.slice(namedays, collectionLimit).map(nameday => this.createCard(nameday)));
         if (namedays.length > 3) {
+            let lastNameDayIndx = namedays.length - 1;
             let nextCollection = new CardsCollection();
             for (let i = 3; i < namedays.length; i++) {
-                if (nextCollection.getCards().length < 3) {
+                if (nextCollection.getCards().length < collectionLimit) {
+                    NameDayCardCreator.LOGGER.info("Adding Nameday: ", namedays[i]);
                     nextCollection.addCard(this.createCard(namedays[i]));
                 }
                 else {
+                    NameDayCardCreator.LOGGER.info("Add next collection: ", nextCollection);
+                    collection.addNext(nextCollection.copy());
+                    nextCollection = new CardsCollection();
+                }
+                if (nextCollection.getSize() < collectionLimit && i === lastNameDayIndx) {
+                    NameDayCardCreator.LOGGER.info("Add next collection: ", nextCollection);
                     collection.addNext(nextCollection.copy());
                     nextCollection = new CardsCollection();
                 }
             }
         }
+        NameDayCardCreator.LOGGER.info("Created Name-Day cards' collection: ", collection);
         return collection;
     }
     createCard(nameday) {
@@ -56,13 +65,14 @@ class NameDayCardCreator {
         cardDescriptionWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardDescription = document.createElement("p");
         cardDescription.classList.add("card_description");
-        cardDescription.innerHTML = nameday.meaning ? nameday.meaning : cardDescription.innerHTML;
+        cardDescription.innerHTML = "undefined" !== nameday.meaning.meaning ? nameday.meaning.meaning : "No meaning found for that name";
         cardDescriptionWrapper.appendChild(cardDescription);
         const cardFooterWrapper = document.createElement("div");
         cardFooterWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardFooter = document.createElement("p");
         cardFooterWrapper.classList.add(...("card__footer snd-pos-obj-inline-center".split(" ")));
         cardFooterWrapper.appendChild(cardFooter);
+        // Helpers.HTMLElementHelper.appendChildren(card, cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
         card.appendChildren(cardTitleWrapper, cardDescriptionWrapper, cardFooterWrapper);
         return card;
     }
@@ -85,8 +95,21 @@ class CardsCollection {
         return this.next;
     }
     addNext(collection) {
-        this.next = collection;
-        this.addPrevious(this);
+        var _a;
+        if (!this.hasNext()) {
+            this.next = collection;
+            this.next.addPrevious(this);
+        }
+        else {
+            let nextCollection = this.getNext();
+            while (nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.hasNext()) {
+                CardsCollection.LOGGER.info("Looking for next card", nextCollection);
+                nextCollection = nextCollection.getNext();
+            }
+            CardsCollection.LOGGER.info("Adding next cards' collection", nextCollection);
+            nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.addNext(collection);
+            (_a = nextCollection === null || nextCollection === void 0 ? void 0 : nextCollection.getNext()) === null || _a === void 0 ? void 0 : _a.addPrevious(nextCollection);
+        }
     }
     getPrevious() {
         return this.previous;
@@ -95,16 +118,18 @@ class CardsCollection {
         this.previous = collection;
     }
     hasNext() {
-        return null !== this.next;
+        return undefined !== this.next;
     }
     hasPrevious() {
-        return null !== this.previous;
+        return undefined !== this.previous;
     }
     copy() {
-        return new CardsCollection(this.cards, this.next, this.previous);
+        var _a, _b;
+        return new CardsCollection([...this.cards], (_a = this.next) === null || _a === void 0 ? void 0 : _a.copy(), (_b = this.previous) === null || _b === void 0 ? void 0 : _b.copy());
     }
     getSize() {
         return this.cards.length;
     }
 }
 exports.CardsCollection = CardsCollection;
+CardsCollection.LOGGER = logger_1.default.getInstance("CardsCollection");

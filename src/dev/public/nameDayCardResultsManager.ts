@@ -1,8 +1,35 @@
 import { CardsCollection } from "./namedayCardCreator";
-import * as Helpers from "./helpers";
+import Logger from "./logger";
+import e from "express";
+
+HTMLElement.prototype.appendChildren = function(...children: Node[]): void {
+    for(let child of children) {
+        this.appendChild(child);
+    }
+};
+
+HTMLElement.prototype.leaveParent = function() {
+    if(this.parentNode) {
+        this.parentNode.removeChild(this);
+        return this;
+    }
+    return null;
+};
+
+HTMLElement.prototype.clear = function() {
+    this.innerHTML = "";
+}
+
+const logger = Logger.getInstance("NameDayCardCreator");
+
+export function clearNameDayCardsResults() {
+    let presentationNameDaysCardsResultsHolder = (document.querySelector(".snd-nameday-cards") as HTMLElement);
+    presentationNameDaysCardsResultsHolder.clear();
+}
 
 export function establishNavigtion(card: CardsCollection) {
     destroyNavigation();
+    logger.info("Next cards' collection: ", card.getNext());
     buildNavigation(card.getNext(), card.getPrevious());
 } 
 
@@ -11,30 +38,43 @@ export function buildNavigation(next?: CardsCollection, previous?: CardsCollecti
     const navigation = document.createElement("div");
     navigation.classList.add("snd-links-wrapper");
 
-    const navigationLink = document.createElement("div");
-    navigationLink.classList.add("snd-link-wrapper");
+    if(!cardResultsPresentationBlock) {
+        throw new Error("Could not locate name-day cards' result block");
+    }
 
     if(previous) {
-        let previousLink = document.createElement("a");
-        previousLink.classList.add('.link');
-        previousLink.innerHTML = "previous";
+        let navigationLink = document.createElement("div");
+        navigationLink.classList.add("snd-link-wrapper");
         
-        previousLink.onclick = event => {
+        let link = document.createElement("a");
+        link.classList.add('.link');
+        link.innerHTML = "previous";
+        
+        link.onclick = event => {
             makeSpaceAndEnterPreviousCards(previous.getCards());
             establishNavigtion(previous);
             event.preventDefault();
         }
 
         /* If there is a previous link, there also should be next link, therefore we have to make space for these links */
-        navigationLink.classList.add(...("layout-flex justify-take-a-breath".split(" ")));
+        navigation.classList.add(...("layout-flex justify-take-a-breath".split(" ")));
+
+      
+        navigationLink.appendChildren(link);
+
+        navigation.appendChild(navigationLink);
     }
 
     if(next) {
-        let nextLink = document.createElement("a");
-        nextLink.classList.add('.link');
-        nextLink.innerHTML = "next";
+        let navigationLink = document.createElement("div");
+        navigationLink.classList.add("snd-link-wrapper");
+    
+        let link = document.createElement("a");
+        link.classList.add('.link');
+        link.innerHTML = "next";
 
-        nextLink.onclick = event => {
+        link.onclick = event => {
+            logger.info("Next cards navigation: ", next.getCards());
             makeSpaceAndEnterNextCards(next.getCards());
             establishNavigtion(next);
             event.preventDefault();
@@ -42,83 +82,145 @@ export function buildNavigation(next?: CardsCollection, previous?: CardsCollecti
 
         if(!previous) {
             /* If there was no previous link, space for two links will be unnecessary */
-            navigationLink.classList.add(...("layout-flex justify--end snd-pad-from-right-4x".split(" ")));
+            navigation.classList.add(...("layout-flex justify--end snd-pad-from-right-4x".split(" ")));
         }
+
+        navigationLink.appendChildren(link);
+
+        navigation.appendChild(navigationLink);
     }
+
+    cardResultsPresentationBlock.appendChild(navigation);
 }
 
 function destroyNavigation(): void {
     const navigation = document.querySelector(".snd-links-wrapper") as HTMLElement;
     if(navigation) {
-        Helpers.HTMLElementHelper.leaveParent(navigation);
+        // Helpers.HTMLElementHelper.leaveParent(navigation);
+        navigation.leaveParent();
     }
 }
 
 function makeSpaceAndEnterPreviousCards(cards: HTMLElement[]) {
     let presentationNameDaysCardsResultsHolder = (document.querySelector(".snd-nameday-cards") as HTMLElement);
     let cardsTakenBackCoords = takeCardsBackBy(cards.length);
+    if(cardsTakenBackCoords.length > 0) {
+        setTimeout(() => {
+            EnterPreviousCards(cardsTakenBackCoords, cards);
+        }, 700)
+    }
+    else {
+        EnterPreviousCards(cardsTakenBackCoords, cards);
+    }
+}
+
+function EnterPreviousCards(cardsTakenBackCoords: any[], cards: HTMLElement[]) {
+    let presentationNameDaysCardsResultsHolder = (document.querySelector(".snd-nameday-cards") as HTMLElement);
     let firstCardTakenBack = cardsTakenBackCoords[cardsTakenBackCoords.length - 1];
     
     let remainingCards = Array.from(getVisibleCards());
 
     if(remainingCards.length === 0) {
-        setTimeout(() => {
-            Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
-            // presentationNameDaysCardsResultsHolder.appendChildren(...cards);
-            for(let i = 0; i < cards.length; i++) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for(let i = 0; i < cards.length; i++) {
+            showInAndMoveAwayFromTo(
+                cards[i],
+                'translateX(100%)',
+                `translateX(0)`,    
+            )
+        }
+    }
+
+    if(remainingCards.length === 1) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for(let i = 0; i < cards.length; i++) {
+            if(i < cards.length - 1) {
                 showInAndMoveAwayFromTo(
                     cards[i],
-                    `translateX(0)`,
-                    'translateX(100%)',    
+                    'translateX(0)',
+                    `translateX(${cardsTakenBackCoords[cardsTakenBackCoords.length - 1]}px)`
                 )
             }
-        })
+            else {
+                showIn(cards[i]);
+            }
+        }
+    }
+
+    
+    if(remainingCards.length === 2) {
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for(let i = 0; i < cards.length; i++) {
+            if(i < cards.length - 1) {
+                showInAndMoveAwayFromTo(
+                    cards[i],
+                    'translateX(0)',
+                    `translateX(${cardsTakenBackCoords[cardsTakenBackCoords.length - 1]}px)`
+                )
+            }
+            else {
+                showIn(cards[i]);
+            }
+        }
     }
 }
 
 export function makeSpaceAndEnterNextCards(cards: HTMLElement[]) {
+    if(getVisibleCards().length === 0) {
+        EnterNextCards([], cards);
+    }
+    else {
+        let forwardedCardsCoords = fastForwardCardsBy(cards.length);
+        if(forwardedCardsCoords.length > 0) {
+            setTimeout(() => {
+                EnterNextCards(forwardedCardsCoords, cards);
+            }, 700);
+        }
+        else {
+            EnterNextCards(forwardedCardsCoords, cards);
+        }
+    }
+}
+
+function EnterNextCards(forwardedCardsCoords: any[], cards: HTMLElement[]) {
     let presentationNameDaysCardsResultsHolder = (document.querySelector(".snd-nameday-cards") as HTMLElement);
-    let forwardedCardsCoords = fastForwardCardsBy(cards.length);
     let lastForwardedCardsCoords = forwardedCardsCoords[forwardedCardsCoords.length - 1];
 
-    let remainingCards = Array.from(getVisibleCards());
-
+    let remainingCards = getVisibleCards();
+    
     if(remainingCards.length === 2) {
         presentationNameDaysCardsResultsHolder.appendChildren(...cards);
         showIn(cards[cards.length-1]);
     }
 
     if(remainingCards.length === 1) {
-        setTimeout(() => {
-            Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
-            // presentationNameDaysCardsResultsHolder.appendChildren(...cards);
-            for(let i = 0; i < cards.length; i++) {
-                if(i < cards.length - 1) {
-                    showInAndMoveAwayFromTo(
-                        cards[i],
-                        `translateX(${forwardedCardsCoords[forwardedCardsCoords.length - 1]}px)`,
-                        'translateX(0)',    
-                    )
-                }
-                else {
-                    showIn(cards[i]);
-                }
-            }
-        });
+         // Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
+         presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+         for(let i = 0; i < cards.length; i++) {
+             if(i < cards.length - 1) {
+                 showInAndMoveAwayFromTo(
+                     cards[i],
+                     `translateX(${forwardedCardsCoords[forwardedCardsCoords.length - 1]}px)`,
+                     'translateX(0)',    
+                 )
+             }
+             else {
+                 showIn(cards[i]);
+             }
+         }
     }
 
     if(remainingCards.length === 0) {
-        setTimeout(() => {
-            Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
-            // presentationNameDaysCardsResultsHolder.appendChildren(...cards);
-            for(let i = 0; i < cards.length; i++) {
-                showInAndMoveAwayFromTo(
-                    cards[i],
-                    `translateX(100%)`,
-                    'translateX(0)',    
-                )
-            }
-        });
+        logger.info("Adding new cards");
+        // Helpers.HTMLElementHelper.appendChildren(presentationNameDaysCardsResultsHolder, ...cards);
+        presentationNameDaysCardsResultsHolder.appendChildren(...cards);
+        for(let i = 0; i < cards.length; i++) {
+            showInAndMoveAwayFromTo(
+                cards[i],
+                `translateX(100%)`,
+                'translateX(0)',    
+            )
+        }
     }
 }
 
@@ -232,8 +334,7 @@ function moveAwayFromTo(card: HTMLElement, from: string, to: string) {
     ],
     {
         delay: 100,
-        duration: 500,
-        fill: 'forwards'
+        duration: 500
     })
 }
 

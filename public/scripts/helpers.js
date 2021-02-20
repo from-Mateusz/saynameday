@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ArrayHelper = void 0;
+exports.HTMLElementHelper = exports.ArrayHelper = void 0;
 class ArrayHelper {
     static slice(source, limit, from) {
         if (from && from > source.length) {
@@ -20,3 +20,21 @@ class ArrayHelper {
     }
 }
 exports.ArrayHelper = ArrayHelper;
+class HTMLElementHelper {
+}
+exports.HTMLElementHelper = HTMLElementHelper;
+HTMLElementHelper.appendChildren = function (target, ...children) {
+    for (let child of children) {
+        target.appendChild(child);
+    }
+};
+HTMLElementHelper.leaveParent = function (source) {
+    if (source.parentNode) {
+        source.parentNode.removeChild(source);
+        return source;
+    }
+    return null;
+};
+HTMLElementHelper.clear = function (source) {
+    source.innerHTML = "";
+};

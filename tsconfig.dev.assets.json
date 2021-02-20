@@ -1,6 +1,6 @@
 {
     "extends": "./tsconfig.json",
-    "include": ["./src/dev/public/**/*"],
+    "include": ["./src/dev/public/**/*", "./src/dev/public/extensions.d.ts"],
     "compilerOptions": {
         "noEmit": false,
         "outDir": "./public/scripts",
