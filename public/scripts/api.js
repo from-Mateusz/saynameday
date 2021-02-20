@@ -6,11 +6,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
 const jquery_1 = __importDefault(require("jquery"));
 const logger_1 = __importDefault(require("./logger"));
+const geocodingapi_1 = __importDefault(require("./geocodingapi"));
 class Client {
+    constructor() {
+        this.geoCodingApi = new geocodingapi_1.default();
+    }
     getNamedaysByCountryCode(code, cb, loaderOptions) {
         if (loaderOptions && loaderOptions.on()) { }
         jquery_1.default.ajax({
-            url: `namedays/${code}`,
+            url: `namedays/${code.toLowerCase()}`,
             method: "get"
         })
             .done((namedays) => {
@@ -19,6 +23,20 @@ class Client {
         })
             .fail(() => {
             console.log('Something went wrong ');
+        });
+    }
+    getNameDaysByCurrentLocation(cb, loaderOptions) {
+        const navigator = window.navigator;
+        const geoLocation = navigator.geolocation;
+        geoLocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            this.geoCodingApi.doReverseGeoCoding({
+                latitude: latitude,
+                longtitude: longitude
+            }, countryCode => {
+                this.getNamedaysByCountryCode(countryCode.toLowerCase(), cb, loaderOptions);
+                return;
+            });
         });
     }
 }

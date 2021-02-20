@@ -23,5 +23,8 @@ class NameDay {
     getMeaning() {
         return this.meaning;
     }
+    isNull() {
+        return false;
+    }
 }
 exports.default = NameDay;

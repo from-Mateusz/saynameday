@@ -4,8 +4,8 @@ export interface NameMeaning {
 }
 
 export default interface NameDay {
-    country: string,
-    date: {},
+    country: any,
+    date: any,
     name: string,
     meaning: NameMeaning
 }

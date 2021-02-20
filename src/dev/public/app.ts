@@ -4,5 +4,6 @@ const countryPicker = new CountryPicker();
 
 window.onload = () => {
     countryPicker.enableCountryPicks();
+    countryPicker.enableCountryPicksByGeoLocation();
 };
 

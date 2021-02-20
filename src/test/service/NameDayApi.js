@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const https_1 = __importDefault(require("https"));
 const EmptyNameMeaning_1 = __importDefault(require("../domain/EmptyNameMeaning"));
 const NameDay_1 = __importDefault(require("../domain/NameDay"));
+const EmptyNameDay_1 = __importDefault(require("../domain/EmptyNameDay"));
 const NameDayDate_1 = __importDefault(require("../domain/NameDayDate"));
 const logger_1 = __importDefault(require("../app/logger"));
 const Repository_1 = __importDefault(require("../repository/Repository"));
@@ -48,15 +49,37 @@ class NameDayApi {
             });
             res.on("end", () => {
                 const { data: { namedays, dates: { day, month } } } = JSON.parse(rawResponse);
-                if (!this.haveNames(namedays)) {
-                    logger.info('No namedays');
-                    fn([]);
-                }
-                else {
-                    repository.findCountryByCode(code, country => {
-                        const nameDays = [];
-                        const namesFromApi = namedays[code];
-                        const names = !namesFromApi ? [] : namesFromApi.split(",").map(name => name.trim());
+                // if(!this.haveNames(namedays)) {
+                //     logger.info('No namedays');
+                //     fn([]);
+                // }
+                // else {
+                //     repository.findCountryByCode(code, country => {
+                //         const nameDays:NameDay[] = [];
+                //         const namesFromApi:string = namedays[code];
+                //         const names:string[] = !namesFromApi ? [] : namesFromApi.split(",").map(name => name.trim());
+                //         repository.findNamesMeaning(names, meanings => {
+                //             for(let name of names) {
+                //                 let nameMeaning = new EmptyNameMeaning();
+                //                 for(let meaning of meanings) {
+                //                     if(name === meaning.getName()) {
+                //                         nameMeaning = meaning;
+                //                     }
+                //                 }
+                //                 nameDays.push(new NameDay(country, new NameDayDate(day, month), name, nameMeaning));
+                //             }
+                //             fn(nameDays);
+                //         });
+                //     });
+                // }
+                repository.findCountryByCode(code, country => {
+                    const nameDays = [];
+                    const namesFromApi = namedays[code];
+                    const names = !namesFromApi ? [] : namesFromApi.split(",").map(name => name.trim());
+                    if (names.length === 0) {
+                        fn([new EmptyNameDay_1.default(country, new NameDayDate_1.default(day, month))]);
+                    }
+                    else {
                         repository.findNamesMeaning(names, meanings => {
                             for (let name of names) {
                                 let nameMeaning = new EmptyNameMeaning_1.default();
@@ -69,8 +92,8 @@ class NameDayApi {
                             }
                             fn(nameDays);
                         });
-                    });
-                }
+                    }
+                });
             });
             res.on('error', err => {
                 logger.error("something bad has happen: ", err);

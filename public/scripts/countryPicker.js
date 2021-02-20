@@ -81,6 +81,17 @@ class CountryPicker {
         });
         this.listenOnCountryPicks();
     }
+    enableCountryPicksByGeoLocation() {
+        const geoLocationIcon = document.querySelector(".snd-input-location-icon");
+        if (!geoLocationIcon) {
+            throw new Error("Could not locate geo location icon/button. Inspect your view structure.");
+        }
+        const that = this;
+        geoLocationIcon.addEventListener("click", event => {
+            CountryPicker.LOGGER.info("Picking name-days based on geo location");
+            that.pickNameDaysByGeoLocation();
+        });
+    }
     listenOnCountryPicks() {
         const countriesList = document.getElementById("available-countries-list");
         const countryPickEvent = new CustomEvent('countryPick', { detail: "" });
@@ -106,15 +117,48 @@ class CountryPicker {
         }
     }
     pickNameDaysByCode(code) {
+        const that = this;
         apiClient.getNamedaysByCountryCode(code, namedays => {
-            const presentationNameDays = Array.from(namedays);
-            const namedayCardCreator = new NameDayCard.NameDayCardCreator();
-            const nameDayCards = namedayCardCreator.createCards(presentationNameDays);
-            CountryPicker.LOGGER.info("Entering new cards: ", namedays);
-            CardsResultManager.clearNameDayCardsResults();
-            CardsResultManager.makeSpaceAndEnterNextCards(nameDayCards.getCards());
-            CardsResultManager.establishNavigtion(nameDayCards);
+            that.handleNameDaysResponse(namedays);
         }, loaderOptions);
+    }
+    pickNameDaysByGeoLocation() {
+        const that = this;
+        apiClient.getNameDaysByCurrentLocation(namedays => {
+            that.handleNameDaysResponse(namedays);
+        }, loaderOptions);
+    }
+    handleNameDaysResponse(namedays) {
+        if (namedays.length > 0) {
+            let { country: { name } } = namedays[0];
+            let announcementCountry = document.getElementById("snd-announ-country-name");
+            if (announcementCountry) {
+                announcementCountry.innerHTML = name;
+            }
+        }
+        if (!this.assertHasAnyNamedays(namedays)) {
+            CountryPicker.LOGGER.info("No NameDays Available");
+            return;
+        }
+        const presentationNameDays = namedays;
+        const namedayCardCreator = new NameDayCard.NameDayCardCreator();
+        const nameDayCards = namedayCardCreator.createCards(presentationNameDays);
+        CountryPicker.LOGGER.info("Entering new cards: ", namedays);
+        CardsResultManager.clearNameDayCardsResults();
+        CardsResultManager.makeSpaceAndEnterNextCards(nameDayCards.getCards());
+        CardsResultManager.establishNavigtion(nameDayCards);
+    }
+    assertHasAnyNamedays(namedays) {
+        if (namedays.length === 0) {
+            return false;
+        }
+        if (namedays.length === 1) {
+            if (namedays[0].name === "unknown") {
+                return false;
+            }
+            return true;
+        }
+        return true;
     }
 }
 exports.default = CountryPicker;

@@ -7,4 +7,5 @@ const countryPicker_1 = __importDefault(require("./countryPicker"));
 const countryPicker = new countryPicker_1.default();
 window.onload = () => {
     countryPicker.enableCountryPicks();
+    countryPicker.enableCountryPicksByGeoLocation();
 };

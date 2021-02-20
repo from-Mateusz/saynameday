@@ -10881,11 +10881,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.Client = void 0;
 const jquery_1 = __importDefault(require("jquery"));
 const logger_1 = __importDefault(require("./logger"));
+const geocodingapi_1 = __importDefault(require("./geocodingapi"));
 class Client {
+    constructor() {
+        this.geoCodingApi = new geocodingapi_1.default();
+    }
     getNamedaysByCountryCode(code, cb, loaderOptions) {
         if (loaderOptions && loaderOptions.on()) { }
         jquery_1.default.ajax({
-            url: `namedays/${code}`,
+            url: `namedays/${code.toLowerCase()}`,
             method: "get"
         })
             .done((namedays) => {
@@ -10896,11 +10900,25 @@ class Client {
             console.log('Something went wrong ');
         });
     }
+    getNameDaysByCurrentLocation(cb, loaderOptions) {
+        const navigator = window.navigator;
+        const geoLocation = navigator.geolocation;
+        geoLocation.getCurrentPosition((position) => {
+            const { latitude, longitude } = position.coords;
+            this.geoCodingApi.doReverseGeoCoding({
+                latitude: latitude,
+                longtitude: longitude
+            }, countryCode => {
+                this.getNamedaysByCountryCode(countryCode.toLowerCase(), cb, loaderOptions);
+                return;
+            });
+        });
+    }
 }
 exports.Client = Client;
 Client.LOGGER = logger_1.default.getInstance("ClientApi");
 
-},{"./logger":6,"jquery":1}],3:[function(require,module,exports){
+},{"./geocodingapi":5,"./logger":7,"jquery":1}],3:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -10910,6 +10928,7 @@ const countryPicker_1 = __importDefault(require("./countryPicker"));
 const countryPicker = new countryPicker_1.default();
 window.onload = () => {
     countryPicker.enableCountryPicks();
+    countryPicker.enableCountryPicksByGeoLocation();
 };
 
 },{"./countryPicker":4}],4:[function(require,module,exports){
@@ -10996,6 +11015,17 @@ class CountryPicker {
         });
         this.listenOnCountryPicks();
     }
+    enableCountryPicksByGeoLocation() {
+        const geoLocationIcon = document.querySelector(".snd-input-location-icon");
+        if (!geoLocationIcon) {
+            throw new Error("Could not locate geo location icon/button. Inspect your view structure.");
+        }
+        const that = this;
+        geoLocationIcon.addEventListener("click", event => {
+            CountryPicker.LOGGER.info("Picking name-days based on geo location");
+            that.pickNameDaysByGeoLocation();
+        });
+    }
     listenOnCountryPicks() {
         const countriesList = document.getElementById("available-countries-list");
         const countryPickEvent = new CustomEvent('countryPick', { detail: "" });
@@ -11021,21 +11051,100 @@ class CountryPicker {
         }
     }
     pickNameDaysByCode(code) {
+        const that = this;
         apiClient.getNamedaysByCountryCode(code, namedays => {
-            const presentationNameDays = Array.from(namedays);
-            const namedayCardCreator = new NameDayCard.NameDayCardCreator();
-            const nameDayCards = namedayCardCreator.createCards(presentationNameDays);
-            CountryPicker.LOGGER.info("Entering new cards: ", namedays);
-            CardsResultManager.clearNameDayCardsResults();
-            CardsResultManager.makeSpaceAndEnterNextCards(nameDayCards.getCards());
-            CardsResultManager.establishNavigtion(nameDayCards);
+            that.handleNameDaysResponse(namedays);
         }, loaderOptions);
+    }
+    pickNameDaysByGeoLocation() {
+        const that = this;
+        apiClient.getNameDaysByCurrentLocation(namedays => {
+            that.handleNameDaysResponse(namedays);
+        }, loaderOptions);
+    }
+    handleNameDaysResponse(namedays) {
+        if (namedays.length > 0) {
+            let { country: { name } } = namedays[0];
+            let announcementCountry = document.getElementById("snd-announ-country-name");
+            if (announcementCountry) {
+                announcementCountry.innerHTML = name;
+            }
+        }
+        if (!this.assertHasAnyNamedays(namedays)) {
+            CountryPicker.LOGGER.info("No NameDays Available");
+            return;
+        }
+        const presentationNameDays = namedays;
+        const namedayCardCreator = new NameDayCard.NameDayCardCreator();
+        const nameDayCards = namedayCardCreator.createCards(presentationNameDays);
+        CountryPicker.LOGGER.info("Entering new cards: ", namedays);
+        CardsResultManager.clearNameDayCardsResults();
+        CardsResultManager.makeSpaceAndEnterNextCards(nameDayCards.getCards());
+        CardsResultManager.establishNavigtion(nameDayCards);
+    }
+    assertHasAnyNamedays(namedays) {
+        if (namedays.length === 0) {
+            return false;
+        }
+        if (namedays.length === 1) {
+            if (namedays[0].name === "unknown") {
+                return false;
+            }
+            return true;
+        }
+        return true;
     }
 }
 exports.default = CountryPicker;
 CountryPicker.LOGGER = logger_1.default.getInstance("CountryPicker");
 
-},{"./api":2,"./logger":6,"./nameDayCardResultsManager":7,"./namedayCardCreator":8}],5:[function(require,module,exports){
+},{"./api":2,"./logger":7,"./nameDayCardResultsManager":8,"./namedayCardCreator":9}],5:[function(require,module,exports){
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const jquery_1 = __importDefault(require("jquery"));
+const logger_1 = __importDefault(require("./logger"));
+class GeoCodingApi {
+    doReverseGeoCoding(coordinates, success) {
+        jquery_1.default.ajax({
+            url: `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longtitude}&key=${GeoCodingApi.key}`,
+            method: "get"
+        })
+            .done(data => {
+            GeoCodingApi.LOGGER.info("Received geo data: ", data);
+            const { results } = data;
+            const decodedAddresses = Array.from(results).map(result => result)
+                .map(result => {
+                const { address_components } = result;
+                return address_components;
+            })
+                .map(addrComponents => {
+                let countryComponent = [];
+                for (let addrComponent of addrComponents) {
+                    const { types } = addrComponent;
+                    for (let type of types) {
+                        if (type === "country") {
+                            countryComponent = addrComponent;
+                        }
+                    }
+                }
+                return countryComponent;
+            });
+            if (decodedAddresses.length > 0) {
+                const { short_name: countryCode } = decodedAddresses[0];
+                GeoCodingApi.LOGGER.info("Decoded country code: ", countryCode);
+                success(countryCode);
+            }
+        });
+    }
+}
+exports.default = GeoCodingApi;
+GeoCodingApi.key = "AIzaSyAOxlc195r7KW3_AgTlUoSAzJD_ZVZPwrs";
+GeoCodingApi.LOGGER = logger_1.default.getInstance("GeoCodingApi");
+
+},{"./logger":7,"jquery":1}],6:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HTMLElementHelper = exports.ArrayHelper = void 0;
@@ -11077,7 +11186,7 @@ HTMLElementHelper.clear = function (source) {
     source.innerHTML = "";
 };
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Logger {
@@ -11099,7 +11208,7 @@ class Logger {
 }
 exports.default = Logger;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -11372,7 +11481,7 @@ function collectCoordinates(card) {
     return { x: bound.x, y: bound.y };
 }
 
-},{"./logger":6}],8:[function(require,module,exports){
+},{"./logger":7}],9:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11509,4 +11618,4 @@ class CardsCollection {
 exports.CardsCollection = CardsCollection;
 CardsCollection.LOGGER = logger_1.default.getInstance("CardsCollection");
 
-},{"./helpers":5,"./logger":6}]},{},[3]);
+},{"./helpers":6,"./logger":7}]},{},[3]);
