@@ -25,6 +25,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CardsCollection = exports.NameDayCardCreator = void 0;
 const logger_1 = __importDefault(require("./logger"));
 const Helpers = __importStar(require("./helpers"));
+const StringUtils_1 = __importDefault(require("./StringUtils"));
 class NameDayCardCreator {
     createCards(namedays) {
         const collectionLimit = 3;
@@ -65,8 +66,17 @@ class NameDayCardCreator {
         cardDescriptionWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardDescription = document.createElement("p");
         cardDescription.classList.add("card_description");
-        cardDescription.innerHTML = "undefined" !== nameday.meaning.meaning ? nameday.meaning.meaning : "No meaning found for that name";
+        cardDescription.innerHTML = StringUtils_1.default.isNotEmpty(nameday.meaning.meaning) ? nameday.meaning.meaning : "No meaning found for that name";
         cardDescriptionWrapper.appendChild(cardDescription);
+        if (StringUtils_1.default.isNotEmpty(nameday.meaning.meaning) && nameday.meaning.meaning.length > 400) {
+            const readMoreLinkWrapper = document.createElement("div");
+            readMoreLinkWrapper.classList.add(...("snd-wrapper snd-pos-obj-inline-center snd-pos-spacing--1x-pd-vert".split(" ")));
+            const readMoreLink = document.createElement("a");
+            readMoreLink.classList.add("link");
+            readMoreLink.innerHTML = "Read more";
+            readMoreLinkWrapper.appendChild(readMoreLink);
+            cardDescriptionWrapper.appendChild(readMoreLinkWrapper);
+        }
         const cardFooterWrapper = document.createElement("div");
         cardFooterWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardFooter = document.createElement("p");

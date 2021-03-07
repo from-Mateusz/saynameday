@@ -1,7 +1,7 @@
 import Logger from './logger';
 import NameDay from './nameDay';
 import * as Helpers from './helpers';
-import { timeStamp } from 'console';
+import StringUtils from "./StringUtils";
 
 export class NameDayCardCreator {
 
@@ -53,9 +53,21 @@ export class NameDayCardCreator {
 
         const cardDescription = document.createElement("p");
         cardDescription.classList.add("card_description");
-        cardDescription.innerHTML = "undefined" !== nameday.meaning.meaning ? nameday.meaning.meaning : "No meaning found for that name";
+        cardDescription.innerHTML = StringUtils.isNotEmpty(nameday.meaning.meaning) ? nameday.meaning.meaning : "No meaning found for that name";
 
         cardDescriptionWrapper.appendChild(cardDescription);
+
+        if(StringUtils.isNotEmpty(nameday.meaning.meaning) && nameday.meaning.meaning.length > 400) {
+            const readMoreLinkWrapper = document.createElement("div");
+            readMoreLinkWrapper.classList.add(...("snd-wrapper snd-pos-obj-inline-center snd-pos-spacing--1x-pd-vert".split(" ")));
+
+            const readMoreLink = document.createElement("a");
+            readMoreLink.classList.add("link");
+            readMoreLink.innerHTML = "Read more";
+            
+            readMoreLinkWrapper.appendChild(readMoreLink);
+            cardDescriptionWrapper.appendChild(readMoreLinkWrapper);
+        }
 
         const cardFooterWrapper = document.createElement("div");
         cardFooterWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));

@@ -26,8 +26,10 @@
   },
   "homepage": "https://github.com/wet-interface/saynameday#readme",
   "dependencies": {
+    "@types/cheerio": "^0.22.24",
     "@types/gulp-minify-css": "0.0.32",
     "body-parser": "^1.19.0",
+    "cheerio": "^1.0.0-rc.5",
     "commonjs": "0.0.1",
     "express": "^4.17.1",
     "gulp-concat": "^2.6.1",

@@ -1,5 +1,9 @@
 export default class Logger {
     constructor(private name: string) {}
+
+    static getInstance(name: string): Logger {
+        return new Logger(name);
+    }
     
     info(message:string, ...values:any) {
         console.log(this.createMessagePrefix(), message, values);

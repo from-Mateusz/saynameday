@@ -10874,6 +10874,16 @@ return jQuery;
 
 },{}],2:[function(require,module,exports){
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+class StringUtils {
+    static isNotEmpty(text) {
+        return undefined !== text && text.trim() !== "";
+    }
+}
+exports.default = StringUtils;
+
+},{}],3:[function(require,module,exports){
+"use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -10918,7 +10928,7 @@ class Client {
 exports.Client = Client;
 Client.LOGGER = logger_1.default.getInstance("ClientApi");
 
-},{"./geocodingapi":5,"./logger":7,"jquery":1}],3:[function(require,module,exports){
+},{"./geocodingapi":6,"./logger":8,"jquery":1}],4:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -10931,7 +10941,7 @@ window.onload = () => {
     countryPicker.enableCountryPicksByGeoLocation();
 };
 
-},{"./countryPicker":4}],4:[function(require,module,exports){
+},{"./countryPicker":5}],5:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11098,7 +11108,7 @@ class CountryPicker {
 exports.default = CountryPicker;
 CountryPicker.LOGGER = logger_1.default.getInstance("CountryPicker");
 
-},{"./api":2,"./logger":7,"./nameDayCardResultsManager":8,"./namedayCardCreator":9}],5:[function(require,module,exports){
+},{"./api":3,"./logger":8,"./nameDayCardResultsManager":9,"./namedayCardCreator":10}],6:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -11144,7 +11154,7 @@ exports.default = GeoCodingApi;
 GeoCodingApi.key = "AIzaSyAOxlc195r7KW3_AgTlUoSAzJD_ZVZPwrs";
 GeoCodingApi.LOGGER = logger_1.default.getInstance("GeoCodingApi");
 
-},{"./logger":7,"jquery":1}],6:[function(require,module,exports){
+},{"./logger":8,"jquery":1}],7:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.HTMLElementHelper = exports.ArrayHelper = void 0;
@@ -11186,7 +11196,7 @@ HTMLElementHelper.clear = function (source) {
     source.innerHTML = "";
 };
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 class Logger {
@@ -11208,7 +11218,7 @@ class Logger {
 }
 exports.default = Logger;
 
-},{}],8:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -11481,7 +11491,7 @@ function collectCoordinates(card) {
     return { x: bound.x, y: bound.y };
 }
 
-},{"./logger":7}],9:[function(require,module,exports){
+},{"./logger":8}],10:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11509,6 +11519,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.CardsCollection = exports.NameDayCardCreator = void 0;
 const logger_1 = __importDefault(require("./logger"));
 const Helpers = __importStar(require("./helpers"));
+const StringUtils_1 = __importDefault(require("./StringUtils"));
 class NameDayCardCreator {
     createCards(namedays) {
         const collectionLimit = 3;
@@ -11549,8 +11560,17 @@ class NameDayCardCreator {
         cardDescriptionWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardDescription = document.createElement("p");
         cardDescription.classList.add("card_description");
-        cardDescription.innerHTML = "undefined" !== nameday.meaning.meaning ? nameday.meaning.meaning : "No meaning found for that name";
+        cardDescription.innerHTML = StringUtils_1.default.isNotEmpty(nameday.meaning.meaning) ? nameday.meaning.meaning : "No meaning found for that name";
         cardDescriptionWrapper.appendChild(cardDescription);
+        if (StringUtils_1.default.isNotEmpty(nameday.meaning.meaning) && nameday.meaning.meaning.length > 400) {
+            const readMoreLinkWrapper = document.createElement("div");
+            readMoreLinkWrapper.classList.add(...("snd-wrapper snd-pos-obj-inline-center snd-pos-spacing--1x-pd-vert".split(" ")));
+            const readMoreLink = document.createElement("a");
+            readMoreLink.classList.add("link");
+            readMoreLink.innerHTML = "Read more";
+            readMoreLinkWrapper.appendChild(readMoreLink);
+            cardDescriptionWrapper.appendChild(readMoreLinkWrapper);
+        }
         const cardFooterWrapper = document.createElement("div");
         cardFooterWrapper.classList.add(...("wrapper snd-pos-spacing--1x-pd-horiz".split(" ")));
         const cardFooter = document.createElement("p");
@@ -11618,4 +11638,4 @@ class CardsCollection {
 exports.CardsCollection = CardsCollection;
 CardsCollection.LOGGER = logger_1.default.getInstance("CardsCollection");
 
-},{"./helpers":6,"./logger":7}]},{},[3]);
+},{"./StringUtils":2,"./helpers":7,"./logger":8}]},{},[4]);

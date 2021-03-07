@@ -6,6 +6,11 @@
     margin: 2em;
 }
 
+.card_description {
+    max-height: calc(300px - 2em);
+    overflow-y: hidden;
+}
+
 .slide-card {
 
 }

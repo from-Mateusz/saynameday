@@ -4,12 +4,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const https_1 = __importDefault(require("https"));
-const EmptyNameMeaning_1 = __importDefault(require("../domain/EmptyNameMeaning"));
 const NameDay_1 = __importDefault(require("../domain/NameDay"));
 const EmptyNameDay_1 = __importDefault(require("../domain/EmptyNameDay"));
 const NameDayDate_1 = __importDefault(require("../domain/NameDayDate"));
 const logger_1 = __importDefault(require("../app/logger"));
 const Repository_1 = __importDefault(require("../repository/Repository"));
+const NameMeaningFinder_1 = require("../service/NameMeaningFinder");
 const logger = new logger_1.default("NameDayApi");
 const repository = Repository_1.default.getInstance();
 class NameDayApi {
@@ -18,6 +18,7 @@ class NameDayApi {
     }
     fetchNameDays(fn) {
         https_1.default.get("https://api.abalin.net/today?country", res => {
+            NameDayApi.LOGGER.info("Looking for name meanings");
             let rawResponse = "";
             res.on('data', data => {
                 rawResponse += data;
@@ -29,8 +30,19 @@ class NameDayApi {
                     countries.forEach(country => {
                         const namesFromApi = namedays[country.getCode()];
                         const names = !namesFromApi ? [] : namesFromApi.split(",");
-                        for (let name of names) {
-                            nameDays.push(new NameDay_1.default(country, new NameDayDate_1.default(day, month), name));
+                        NameDayApi.LOGGER.info("Looking for name meanings");
+                        if ("pl" === country.getCode()) {
+                            const nameMeaningFinder = NameMeaningFinder_1.NameMeaningFinderFactory.polish();
+                            for (let name of names) {
+                                nameDays.push(new NameDay_1.default(country, new NameDayDate_1.default(day, month), name));
+                                nameMeaningFinder.findMeaningByName(name, (meaning) => {
+                                });
+                            }
+                        }
+                        else {
+                            for (let name of names) {
+                                nameDays.push(new NameDay_1.default(country, new NameDayDate_1.default(day, month), name));
+                            }
                         }
                     });
                     fn(nameDays);
@@ -49,29 +61,6 @@ class NameDayApi {
             });
             res.on("end", () => {
                 const { data: { namedays, dates: { day, month } } } = JSON.parse(rawResponse);
-                // if(!this.haveNames(namedays)) {
-                //     logger.info('No namedays');
-                //     fn([]);
-                // }
-                // else {
-                //     repository.findCountryByCode(code, country => {
-                //         const nameDays:NameDay[] = [];
-                //         const namesFromApi:string = namedays[code];
-                //         const names:string[] = !namesFromApi ? [] : namesFromApi.split(",").map(name => name.trim());
-                //         repository.findNamesMeaning(names, meanings => {
-                //             for(let name of names) {
-                //                 let nameMeaning = new EmptyNameMeaning();
-                //                 for(let meaning of meanings) {
-                //                     if(name === meaning.getName()) {
-                //                         nameMeaning = meaning;
-                //                     }
-                //                 }
-                //                 nameDays.push(new NameDay(country, new NameDayDate(day, month), name, nameMeaning));
-                //             }
-                //             fn(nameDays);
-                //         });
-                //     });
-                // }
                 repository.findCountryByCode(code, country => {
                     const nameDays = [];
                     const namesFromApi = namedays[code];
@@ -80,18 +69,37 @@ class NameDayApi {
                         fn([new EmptyNameDay_1.default(country, new NameDayDate_1.default(day, month))]);
                     }
                     else {
-                        repository.findNamesMeaning(names, meanings => {
-                            for (let name of names) {
-                                let nameMeaning = new EmptyNameMeaning_1.default();
+                        NameDayApi.LOGGER.info("Looking for name meanings");
+                        if ("pl" === country.getCode()) {
+                            const nameMeaningFinder = NameMeaningFinder_1.NameMeaningFinderFactory.polish();
+                            // for(let name of names) {
+                            //     NameDayApi.LOGGER.info("Looking for name meaning for: ", name);
+                            //     // nameMeaningFinder.findMeaningByName(name, (meaning) => {
+                            //     //     const nameMeaning = StringUtils.isNotEmpty(meaning) ? new NameMeaning(name, meaning) : new EmptyNameMeaning();
+                            //     //     NameDayApi.LOGGER.info("Name meaning: ", nameMeaning);
+                            //     //     nameDays.push(new NameDay(country, new NameDayDate(day, month), name, nameMeaning));
+                            //     // });
+                            // }
+                            nameMeaningFinder.findAllNameMeanings(names, (meanings) => {
+                                NameDayApi.LOGGER.info("Found name meanings: ", names);
                                 for (let meaning of meanings) {
-                                    if (name === meaning.getName()) {
-                                        nameMeaning = meaning;
-                                    }
+                                    nameDays.push(new NameDay_1.default(country, new NameDayDate_1.default(day, month), meaning.getName(), meaning));
                                 }
-                                nameDays.push(new NameDay_1.default(country, new NameDayDate_1.default(day, month), name, nameMeaning));
-                            }
-                            fn(nameDays);
-                        });
+                                fn(nameDays);
+                            });
+                        }
+                        // repository.findNamesMeaning(names, meanings => {
+                        //     for(let name of names) {
+                        //                 let nameMeaning = new EmptyNameMeaning();
+                        //                 for(let meaning of meanings) {
+                        //                     if(name === meaning.getName()) {
+                        //                         nameMeaning = meaning;
+                        //                     }
+                        //                 }
+                        //                 nameDays.push(new NameDay(country, new NameDayDate(day, month), name, nameMeaning));
+                        //     }
+                        //     fn(nameDays);
+                        // });
                     }
                 });
             });
@@ -107,3 +115,4 @@ class NameDayApi {
 }
 exports.default = NameDayApi;
 NameDayApi.instance = new NameDayApi();
+NameDayApi.LOGGER = logger_1.default.getInstance("NameDayApi");

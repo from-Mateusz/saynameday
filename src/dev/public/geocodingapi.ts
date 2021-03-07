@@ -8,7 +8,7 @@ interface GeoCoordinates {
 
 export default class GeoCodingApi {
 
-    private static readonly key = "<your_api_key>";
+    private static readonly key = "<your api key>";
 
     private static readonly LOGGER = Logger.getInstance("GeoCodingApi");
 

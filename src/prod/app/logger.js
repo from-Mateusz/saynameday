@@ -4,6 +4,9 @@ class Logger {
     constructor(name) {
         this.name = name;
     }
+    static getInstance(name) {
+        return new Logger(name);
+    }
     info(message, ...values) {
         console.log(this.createMessagePrefix(), message, values);
     }
